@@ -1,0 +1,16 @@
+{
+  "name": "sleepingagent",
+  "version": "1.0.0",
+  "description": "PoC: Web Push Notifications as covert C2 channel",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["redteam", "c2", "service-worker", "web-push"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "web-push": "^3.6.7"
+  }
+}
