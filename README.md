@@ -1,5 +1,4 @@
-Show more10.44Päivitetään multi-vendor statuksella:
-markdown# SleepingAgent
+# SleepingAgent
 
 > **Status:** Confirmed across 7 browsers and 4 push backends. Coordinated multi-vendor disclosure in progress. Public disclosure May 20, 2026.
 
