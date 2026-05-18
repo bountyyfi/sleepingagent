@@ -1,6 +1,6 @@
 # SleepingAgent
 
-> **Status:** Disclosed May 20, 2026. Full writeup: [bountyy.fi/sleeping-agent](https://bountyy.fi)
+> **Status:** Disclosed May 20, 2026. Full writeup: [bountyy.fi/blog/sleeping-agent-web-push](https://bountyy.fi/blog/sleeping-agent-web-push)
 
 ## What is this
 
