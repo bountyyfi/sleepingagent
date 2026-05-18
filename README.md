@@ -1,6 +1,6 @@
 # SleepingAgent
 
-> **Status:** Confirmed across 7 browsers and 4 push backends. Coordinated multi-vendor disclosure in progress. Public disclosure May 20, 2026.
+> **Status:** Disclosed May 20, 2026. Full writeup: [bountyy.fi/sleeping-agent](https://bountyy.fi)
 
 ## What is this
 
@@ -36,12 +36,24 @@ Tested February-March 2026.
 | Vivaldi | FCM | yes | yes | yes |
 | Firefox | FCM | Blocked by quota | - | - |
 
-## Vendor status
+## Vendor status (as of May 20, 2026)
 
-- **Apple** - Confirmed, fix in progress
-- **Google Chrome** - S3/P3, under review
-- **Microsoft Edge** - Closed, no bounty (by design)
-- **Mozilla Firefox** - Closed - Blocked by quota
+- **Apple Safari** - Fixed in iOS/macOS 26.5 (May 11, 2026). No bounty. Credit queued.
+- **Google Chrome** - Classified Sev-Low. Patch ([CL 7767797](https://chromium-review.googlesource.com/c/chromium/src/+/7767797)) submitted by reporter, CQ+1 from Chromium engineer, full CQ green, moved to backlog. No CVE, no bounty.
+- **Microsoft Edge** - Closed March 11, 2026. Reassessed as Security Feature Bypass May 18. Fix timeline tied to Chromium. No CVE, no bounty.
+- **Mozilla Firefox** - Closed. Suppression blocked by quota enforcement (the only vendor that enforces the spec).
+- **Vivaldi** - Acknowledged February 19 (VB-125289). Ships when Chromium ships.
+- **Brave, Opera** - Inherit the Chromium code path. Ship when Chromium ships.
+
+## The patch
+
+The fix is 30 lines. It adds a 500ms delayed check after push event completion. If no notification is visible for the origin at that point, a fallback notification is shown.
+
+- File: `chrome/browser/push_messaging/push_messaging_router.cc`
+- CL: <https://chromium-review.googlesource.com/c/chromium/src/+/7767797>
+- Status: open, green, CQ+1, backlogged
+
+Anyone with commit access is welcome to take it over. Change-Id and Bug line preserved.
 
 ## This repo
 
@@ -50,17 +62,20 @@ Contains only the notification suppression test. One research question: does the
 Not a tool. Not for deployment. For reproducing the finding.
 
 ## Setup
+
 ```bash
 npm install
 node -e "const wp = require('web-push'); const k = wp.generateVAPIDKeys(); console.log(JSON.stringify(k, null, 2))"
 ```
 
 Paste the keys into `server.js` and `public/index.html` where marked. Then:
+
 ```bash
 node server.js
 ```
 
 Open `http://localhost:3000` in Chrome. Click Accept All. Allow notifications. Then:
+
 ```bash
 curl -X POST http://localhost:3000/c2/send \
   -H "Content-Type: application/json" \
@@ -71,12 +86,10 @@ Watch your screen. Watch your terminal.
 
 ## Disclosure
 
-Coordinated multi-vendor disclosure initiated February 18, 2026.  
-90-day embargo expires **May 20, 2026**.  
-Full writeup and public disclosure at embargo end.
+Coordinated multi-vendor disclosure initiated February 18, 2026.
+90-day embargo expired May 20, 2026.
+Full writeup: [bountyy.fi](https://bountyy.fi)
 
 ## Research by
 
-[Bountyy Oy](https://bountyy.fi) - offensive security research  
-Mihalis Haatainen | 130+ bug bounty findings | CVE-2019-1568
-
+[Bountyy Oy](https://bountyy.fi) - offensive security research
